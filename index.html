@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>교실 TV용 랜덤 학생 뽑기</title>
+
+  <style>
+    @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
+
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --hot-pink: #ff4fa3;
+      --deep-pink: #d9468f;
+      --soft-pink: #ffe1ef;
+      --cream: #fff7fb;
+      --navy: #17172f;
+      --purple: #6d28d9;
+      --yellow: #ffe066;
+      --mint: #7cf7c2;
+      --white: #ffffff;
+      --danger: #ffccd5;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+      color: var(--navy);
+      background:
+        radial-gradient(circle at 12% 16%, rgba(255, 224, 102, 0.95), transparent 23%),
+        radial-gradient(circle at 88% 14%, rgba(124, 247, 194, 0.75), transparent 24%),
+        radial-gradient(circle at 18% 88%, rgba(167, 139, 250, 0.65), transparent 24%),
+        linear-gradient(135deg, #ff8ecb 0%, #ff5fab 38%, #f9a8d4 100%);
+      padding: 22px;
+      overflow-x: hidden;
+    }
+
+    .app {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 18px;
+      color: white;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(44px, 5.2vw, 88px);
+      line-height: 1.04;
+      font-weight: 1000;
+      letter-spacing: -0.07em;
+      text-shadow: 0 7px 18px rgba(126, 34, 89, 0.45);
+    }
+
+    .subtitle {
+      margin: 12px 0 0;
+      font-size: clamp(20px, 1.85vw, 30px);
+      font-weight: 900;
+      color: #fff7fb;
+      text-shadow: 0 4px 10px rgba(126, 34, 89, 0.35);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .card {
+      background: rgba(255, 247, 251, 0.90);
+      border: 5px solid rgba(255, 255, 255, 0.72);
+      border-radius: 34px;
+      box-shadow: 0 22px 54px rgba(126, 34, 89, 0.26);
+      backdrop-filter: blur(10px);
+    }
+
+    .input-card {
+      padding: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 28px;
+      font-weight: 1000;
+      margin-bottom: 12px;
+      color: #831843;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 285px;
+      resize: vertical;
+      border: 5px solid #f9a8d4;
+      border-radius: 26px;
+      padding: 18px;
+      font-size: 24px;
+      line-height: 1.55;
+      font-weight: 850;
+      outline: none;
+      background: white;
+      color: #111827;
+    }
+
+    textarea:focus {
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 7px rgba(255, 224, 102, 0.45);
+    }
+
+    .hint {
+      margin: 12px 0 0;
+      font-size: 18px;
+      line-height: 1.45;
+      font-weight: 850;
+      color: #831843;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 16px 22px;
+      font-size: 22px;
+      font-weight: 1000;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+      word-break: keep-all;
+      font-family: inherit;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .register {
+      background: var(--yellow);
+      color: #713f12;
+      box-shadow: 0 10px 22px rgba(250, 204, 21, 0.32);
+    }
+
+    .reset {
+      background: #bbf7d0;
+      color: #14532d;
+    }
+
+    .clear {
+      background: var(--danger);
+      color: #881337;
+    }
+
+    .sound {
+      background: #e9d5ff;
+      color: #581c87;
+    }
+
+    .draw {
+      width: 100%;
+      padding: 26px 28px;
+      font-size: clamp(34px, 3.35vw, 56px);
+      background: linear-gradient(135deg, #ffe066, #ff7abf, #c084fc);
+      color: #3b0764;
+      box-shadow: 0 20px 38px rgba(190, 24, 93, 0.28);
+      border: 6px solid rgba(255, 255, 255, 0.9);
+      letter-spacing: -0.05em;
+    }
+
+    .message {
+      min-height: 34px;
+      margin: 14px 0 0;
+      color: #9d174d;
+      font-size: 19px;
+      font-weight: 1000;
+      line-height: 1.45;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-rows: auto 1fr auto auto;
+      gap: 16px;
+      padding: 22px;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .status {
+      background: white;
+      color: #111827;
+      border-radius: 28px;
+      padding: 16px 10px;
+      text-align: center;
+      border: 5px solid #fbcfe8;
+      box-shadow: 0 10px 22px rgba(190, 24, 93, 0.14);
+    }
+
+    .status strong {
+      display: block;
+      font-size: clamp(40px, 4.1vw, 66px);
+      line-height: 1;
+      color: #be185d;
+      margin-bottom: 6px;
+      font-weight: 1000;
+    }
+
+    .status span {
+      display: block;
+      font-size: clamp(18px, 1.55vw, 25px);
+      font-weight: 1000;
+      color: #831843;
+    }
+
+    .screen {
+      position: relative;
+      min-height: 440px;
+      border-radius: 42px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.96), transparent 24%),
+        linear-gradient(135deg, #fff7fb 0%, #ffe1ef 42%, #fef3c7 100%);
+      border: 9px solid rgba(255, 255, 255, 0.88);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 28px;
+      box-shadow:
+        inset 0 0 0 5px rgba(190, 24, 93, 0.08),
+        0 26px 56px rgba(126, 34, 89, 0.30);
+      text-align: center;
+    }
+
+    .screen::before {
+      content: "";
+      position: absolute;
+      inset: -45%;
+      background:
+        conic-gradient(from 0deg, rgba(255, 224, 102, 0.48), rgba(255, 79, 163, 0.34), rgba(192, 132, 252, 0.36), rgba(124, 247, 194, 0.36), rgba(255, 224, 102, 0.48));
+      opacity: 0;
+      transform: scale(0.86);
+    }
+
+    .screen.rolling::before {
+      opacity: 1;
+      animation: spinGlow 0.75s linear infinite;
+    }
+
+    @keyframes spinGlow {
+      to {
+        transform: scale(1.08) rotate(360deg);
+      }
+    }
+
+    .result-label {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 250px;
+      padding: 12px 28px;
+      border-radius: 999px;
+      background: #be185d;
+      color: white;
+      font-size: clamp(25px, 2.55vw, 42px);
+      font-weight: 1000;
+      margin-bottom: 22px;
+      box-shadow: 0 12px 20px rgba(190, 24, 93, 0.28);
+    }
+
+    .result-name {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      min-height: 158px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #3b0764;
+      font-size: clamp(86px, 10.6vw, 178px);
+      font-weight: 1000;
+      line-height: 1.02;
+      letter-spacing: -0.08em;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      text-shadow:
+        0 6px 0 rgba(255, 224, 102, 0.95),
+        0 14px 24px rgba(126, 34, 89, 0.24);
+    }
+
+    .drum-text {
+      position: relative;
+      z-index: 1;
+      min-height: 58px;
+      margin-top: 20px;
+      font-size: clamp(34px, 3.7vw, 60px);
+      color: #be185d;
+      font-weight: 1000;
+      letter-spacing: -0.05em;
+    }
+
+    .rolling .result-name {
+      animation: tvShake 0.065s infinite;
+    }
+
+    .rolling .drum-text::after {
+      content: "두구두구...";
+      animation: drumText 0.5s infinite;
+    }
+
+    @keyframes drumText {
+      0% { content: "두구!"; }
+      25% { content: "두구두구!"; }
+      50% { content: "두구두구두구!"; }
+      75% { content: "두구두구두구..."; }
+      100% { content: "두구두구두구!!!"; }
+    }
+
+    @keyframes tvShake {
+      0% { transform: translateX(-5px) rotate(-1deg) scale(1.01); }
+      50% { transform: translateX(5px) rotate(1deg) scale(1.035); }
+      100% { transform: translateX(-2px) rotate(0deg) scale(1.01); }
+    }
+
+    .winner {
+      animation: winnerPop 0.72s ease both;
+    }
+
+    @keyframes winnerPop {
+      0% { transform: scale(0.72); opacity: 0.1; }
+      55% { transform: scale(1.17); opacity: 1; }
+      78% { transform: scale(0.96); }
+      100% { transform: scale(1); }
+    }
+
+    .lists {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      min-height: 250px;
+    }
+
+    .list-box {
+      background: white;
+      color: #111827;
+      border-radius: 28px;
+      padding: 16px;
+      border: 5px solid #fbcfe8;
+      max-height: 315px;
+      overflow: auto;
+      box-shadow: 0 10px 22px rgba(190, 24, 93, 0.12);
+    }
+
+    .list-title {
+      margin: 0 0 10px;
+      font-size: clamp(23px, 2.05vw, 34px);
+      font-weight: 1000;
+      color: #be185d;
+    }
+
+    .name-list {
+      font-size: clamp(21px, 1.85vw, 31px);
+      line-height: 1.55;
+      font-weight: 900;
+      color: #3b0764;
+    }
+
+    .empty {
+      color: #64748b;
+      font-weight: 900;
+    }
+
+    .picked-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 2px dashed #f9a8d4;
+    }
+
+    .picked-item:last-child {
+      border-bottom: 0;
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: #be185d;
+      color: white;
+      font-weight: 1000;
+      font-size: 23px;
+    }
+
+    .confetti {
+      position: fixed;
+      width: 18px;
+      height: 18px;
+      left: 50vw;
+      top: 50vh;
+      border-radius: 5px;
+      pointer-events: none;
+      z-index: 9999;
+      animation: burst 1.45s cubic-bezier(.18,.72,.26,1) forwards;
+    }
+
+    @keyframes burst {
+      0% {
+        transform: translate(-50%, -50%) scale(0.25) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1.05) rotate(var(--r));
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .screen {
+        min-height: 370px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 12px;
+      }
+
+      .main-grid,
+      .lists,
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .input-card,
+      .stage {
+        padding: 16px;
+      }
+
+      textarea {
+        min-height: 190px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .screen.rolling::before,
+      .rolling .result-name,
+      .winner,
+      .confetti {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>우리 반 랜덤 학생 뽑기</h1>
+      <p class="subtitle">엑셀 명단 붙여넣기 가능 · 한 번 뽑힌 학생은 다시 뽑히지 않음 · TV 화면용 큰 글씨</p>
+    </header>
+
+    <section class="main-grid">
+      <section class="card input-card">
+        <label for="namesInput">학생 명단 붙여넣기</label>
+        <textarea id="namesInput" placeholder="예시:
+김민준
+이서연
+박지호
+
+엑셀에서 여러 셀을 복사한 뒤 그대로 붙여넣으세요."></textarea>
+
+        <p class="hint">
+          줄바꿈, 탭, 쉼표, 세미콜론을 기준으로 이름을 자동 분리합니다.
+          같은 이름은 한 번만 등록됩니다.
+        </p>
+
+        <div class="button-row">
+          <button class="register" id="registerBtn">명단 등록</button>
+          <button class="reset" id="resetPickedBtn" disabled>초기화</button>
+          <button class="clear" id="clearBtn">전체 지우기</button>
+          <button class="sound" id="soundBtn">소리 켜기</button>
+        </div>
+
+        <p class="message" id="message"></p>
+      </section>
+
+      <section class="card stage">
+        <div class="status-grid">
+          <div class="status">
+            <strong id="totalCount">0</strong>
+            <span>전체 학생</span>
+          </div>
+          <div class="status">
+            <strong id="remainingCount">0</strong>
+            <span>남은 학생</span>
+          </div>
+          <div class="status">
+            <strong id="pickedCount">0</strong>
+            <span>뽑힌 학생</span>
+          </div>
+        </div>
+
+        <div class="screen" id="screen">
+          <div class="result-label" id="resultLabel">결과</div>
+          <div class="result-name" id="resultName">?</div>
+          <div class="drum-text" id="drumText"></div>
+        </div>
+
+        <button class="draw" id="drawBtn" disabled>두구두구 뽑기!</button>
+
+        <div class="lists">
+          <div class="list-box">
+            <p class="list-title">남은 학생</p>
+            <div class="name-list empty" id="remainingList">아직 등록된 학생이 없습니다.</div>
+          </div>
+
+          <div class="list-box">
+            <p class="list-title">뽑힌 학생 목록</p>
+            <div class="name-list empty" id="pickedList">아직 뽑힌 학생이 없습니다.</div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const namesInput = document.getElementById("namesInput");
+    const registerBtn = document.getElementById("registerBtn");
+    const resetPickedBtn = document.getElementById("resetPickedBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const soundBtn = document.getElementById("soundBtn");
+    const drawBtn = document.getElementById("drawBtn");
+    const totalCount = document.getElementById("totalCount");
+    const remainingCount = document.getElementById("remainingCount");
+    const pickedCount = document.getElementById("pickedCount");
+    const remainingList = document.getElementById("remainingList");
+    const pickedList = document.getElementById("pickedList");
+    const resultName = document.getElementById("resultName");
+    const resultLabel = document.getElementById("resultLabel");
+    const drumText = document.getElementById("drumText");
+    const message = document.getElementById("message");
+    const screen = document.getElementById("screen");
+
+    let students = [];
+    let pickedStudents = [];
+    let isRolling = false;
+    let soundEnabled = true;
+    let audioContext = null;
+    let drumTimer = null;
+
+    function initAudio() {
+      if (!audioContext) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContext();
+      }
+
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+    }
+
+    function playTone(frequency, duration, type = "sine", gainValue = 0.08) {
+      if (!soundEnabled) return;
+
+      try {
+        initAudio();
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        gain.gain.setValueAtTime(gainValue, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + duration);
+      } catch (error) {
+        message.textContent = "이 브라우저에서는 소리 재생이 제한될 수 있습니다.";
+      }
+    }
+
+    function startDrumSound() {
+      if (!soundEnabled) return;
+
+      stopDrumSound();
+      let beat = 0;
+
+      drumTimer = setInterval(() => {
+        const freq = beat % 2 === 0 ? 130 : 175;
+        playTone(freq, 0.075, "triangle", 0.09);
+        beat += 1;
+      }, 115);
+    }
+
+    function stopDrumSound() {
+      if (drumTimer) {
+        clearInterval(drumTimer);
+        drumTimer = null;
+      }
+    }
+
+    function playDingSound() {
+      if (!soundEnabled) return;
+
+      playTone(784, 0.13, "sine", 0.11);
+      setTimeout(() => playTone(988, 0.16, "sine", 0.10), 120);
+      setTimeout(() => playTone(1319, 0.22, "sine", 0.09), 260);
+    }
+
+    function parseNames(text) {
+      return [...new Set(
+        text
+          .split(/[\n\r\t,;]+/g)
+          .map(name => name.trim())
+          .filter(Boolean)
+      )];
+    }
+
+    function getRemainingStudents() {
+      return students.filter(name => !pickedStudents.includes(name));
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderList(names, emptyText, ordered = false) {
+      if (names.length === 0) {
+        return `<div class="empty">${emptyText}</div>`;
+      }
+
+      if (ordered) {
+        return names.map((name, index) => `
+          <div class="picked-item">
+            <span class="badge">${index + 1}</span>
+            <span>${escapeHtml(name)}</span>
+          </div>
+        `).join("");
+      }
+
+      return names.map((name, index) => `${index + 1}. ${escapeHtml(name)}`).join("<br>");
+    }
+
+    function updateView() {
+      const remaining = getRemainingStudents();
+
+      totalCount.textContent = students.length;
+      remainingCount.textContent = remaining.length;
+      pickedCount.textContent = pickedStudents.length;
+
+      remainingList.classList.toggle("empty", remaining.length === 0);
+      remainingList.innerHTML = renderList(
+        remaining,
+        students.length === 0 ? "아직 등록된 학생이 없습니다." : "모든 학생이 한 번씩 뽑혔습니다."
+      );
+
+      pickedList.classList.toggle("empty", pickedStudents.length === 0);
+      pickedList.innerHTML = renderList(
+        pickedStudents,
+        "아직 뽑힌 학생이 없습니다.",
+        true
+      );
+
+      drawBtn.disabled = students.length === 0 || remaining.length === 0 || isRolling;
+      resetPickedBtn.disabled = pickedStudents.length === 0 || isRolling;
+
+      if (students.length > 0 && remaining.length === 0 && !isRolling) {
+        resultLabel.textContent = "완료";
+        drumText.textContent = "";
+        if (resultName.textContent === "?" || resultName.textContent === "") {
+          resultName.textContent = "모두 뽑힘";
+        }
+        message.textContent = "모든 학생이 한 번씩 뽑혔습니다. 다시 뽑으려면 '초기화'를 눌러 주세요.";
+      }
+    }
+
+    function registerNames() {
+      const parsed = parseNames(namesInput.value);
+
+      if (parsed.length === 0) {
+        message.textContent = "등록할 학생 이름을 먼저 붙여넣어 주세요.";
+        return;
+      }
+
+      students = parsed;
+      pickedStudents = [];
+      message.textContent = "";
+      resultLabel.textContent = "준비 완료";
+      resultName.textContent = "?";
+      drumText.textContent = "";
+      resultName.classList.remove("winner");
+      updateView();
+    }
+
+    function resetPickedOnly() {
+      pickedStudents = [];
+      message.textContent = "초기화했습니다. 뽑힌 학생들이 다시 후보로 돌아갔습니다.";
+      resultLabel.textContent = "준비 완료";
+      resultName.textContent = "?";
+      drumText.textContent = "";
+      resultName.classList.remove("winner");
+      updateView();
+    }
+
+    function clearAll() {
+      students = [];
+      pickedStudents = [];
+      namesInput.value = "";
+      message.textContent = "";
+      resultLabel.textContent = "결과";
+      resultName.textContent = "?";
+      drumText.textContent = "";
+      resultName.classList.remove("winner");
+      updateView();
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+
+      if (soundEnabled) {
+        initAudio();
+        soundBtn.textContent = "소리 켜짐";
+        message.textContent = "소리가 켜졌습니다.";
+        playTone(880, 0.12, "sine", 0.08);
+      } else {
+        stopDrumSound();
+        soundBtn.textContent = "소리 꺼짐";
+        message.textContent = "소리가 꺼졌습니다.";
+      }
+    }
+
+    function pickRandomFrom(array) {
+      return array[Math.floor(Math.random() * array.length)];
+    }
+
+    function setControlsDisabled(disabled) {
+      isRolling = disabled;
+      registerBtn.disabled = disabled;
+      clearBtn.disabled = disabled;
+      soundBtn.disabled = disabled;
+      resetPickedBtn.disabled = disabled || pickedStudents.length === 0;
+      drawBtn.disabled = disabled;
+    }
+
+    function drawStudent() {
+      const remaining = getRemainingStudents();
+
+      if (remaining.length === 0 || isRolling) return;
+
+      initAudio();
+      setControlsDisabled(true);
+      resultName.classList.remove("winner");
+      screen.classList.add("rolling");
+      resultLabel.textContent = "뽑는 중";
+      drumText.textContent = "";
+      startDrumSound();
+
+      let speed = 28;
+      let elapsed = 0;
+      const totalDuration = 3300;
+      let chosen = pickRandomFrom(remaining);
+
+      function roll() {
+        chosen = pickRandomFrom(remaining);
+        resultName.textContent = chosen;
+
+        elapsed += speed;
+
+        if (elapsed < totalDuration) {
+          if (elapsed > 1000) speed += 12;
+          if (elapsed > 1900) speed += 27;
+          if (elapsed > 2700) speed += 50;
+          setTimeout(roll, speed);
+        } else {
+          finishDraw(chosen);
+        }
+      }
+
+      roll();
+    }
+
+    function finishDraw(winner) {
+      stopDrumSound();
+
+      if (!pickedStudents.includes(winner)) {
+        pickedStudents.push(winner);
+      }
+
+      resultName.textContent = winner;
+      resultLabel.textContent = "오늘의 주인공";
+      drumText.textContent = "선정 완료!";
+      screen.classList.remove("rolling");
+      resultName.classList.add("winner");
+      message.textContent = "";
+
+      playDingSound();
+      createConfettiBurst();
+
+      isRolling = false;
+      registerBtn.disabled = false;
+      clearBtn.disabled = false;
+      soundBtn.disabled = false;
+      updateView();
+    }
+
+    function createConfettiBurst() {
+      const colors = ["#ffffff", "#ffe066", "#ff4fa3", "#c084fc", "#7cf7c2", "#38bdf8", "#fb7185"];
+
+      for (let i = 0; i < 140; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti";
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 180 + Math.random() * 760;
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+
+        piece.style.setProperty("--x", `${x}px`);
+        piece.style.setProperty("--y", `${y}px`);
+        piece.style.setProperty("--r", `${Math.random() * 1080 - 540}deg`);
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 0.18 + "s";
+        piece.style.width = 10 + Math.random() * 18 + "px";
+        piece.style.height = 10 + Math.random() * 18 + "px";
+
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 1800);
+      }
+    }
+
+    registerBtn.addEventListener("click", registerNames);
+    resetPickedBtn.addEventListener("click", resetPickedOnly);
+    clearBtn.addEventListener("click", clearAll);
+    soundBtn.addEventListener("click", toggleSound);
+    drawBtn.addEventListener("click", drawStudent);
+
+    namesInput.addEventListener("paste", () => {
+      setTimeout(() => {
+        const parsed = parseNames(namesInput.value);
+        if (parsed.length > 0) {
+          message.textContent = `붙여넣은 명단에서 ${parsed.length}명을 인식했습니다. '명단 등록'을 눌러 주세요.`;
+        }
+      }, 0);
+    });
+
+    updateView();
+  </script>
+</body>
+</html>
